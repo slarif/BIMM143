@@ -2,9 +2,7 @@
 title: 'Class 6: R Functions'
 author: "Sarra Larif"
 date: "1/23/2020"
-output:
-  html_document: default
-  word_document: default
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
