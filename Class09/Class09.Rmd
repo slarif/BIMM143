@@ -1,0 +1,188 @@
+---
+title: "Class 09"
+author: "Sarra Larif"
+date: "2/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##K-means clustering 
+K-means clustering: tries to group things into similar categories 
+k=3: group things into 3 groups (`center=3`)
+each point added updates the mean cluster point (representative point)
+after finding variation, it starts over by picking 3 different random points and doing everything again until it finds least amount of variation 
+one cycle - one iteration 
+Use "scree plot" to look for biggest drop of Total within SS to determine what k should be rather than doing trial/error
+
+```{r}
+tmp <- c(rnorm(30,-3), rnorm(30,3))
+x <- cbind(x=tmp, y=rev(tmp)) 
+plot(x)
+```
+
+```{r}
+km <- kmeans(x, centers = 2, nstart=20)
+km
+```
+Use the kmeans() function setting k to 2 and nstart=20
+Inspect/print the results
+Q. How many points are in each cluster? 30
+Q. What ‘component’ of your result object details
+ - cluster size? "size"
+ - cluster assignment/membership? "cluster"
+ - cluster center? "centers"
+```{r}
+km$size
+km$cluster
+km$centers
+length(km$cluster)
+table(km$cluster)
+```
+ 
+Plot x colored by the kmeans cluster assignment and
+ add cluster centers as blue points
+```{r}
+plot(x, col = km$cluster)
+points(km$centers, col = "blue")
+```
+
+##Hierarchical clustering
+Each point is a cluster so you take 2 nearby clusters that are close and combine them into 1 and keep aggregating clusters until you have one giant cluster 
+The main Hierarchical clustering function in R is called `hclust()`
+an important point is that you have to calculate the distance matrix from your input data before calling `hclust()` 
+Can't just put `hclust(x)` 
+dfor this we use `dist()` function 
+
+```{r}
+# First we need to calculate point (dis)similarity
+# as the Euclidean distance between observations
+d <- dist(x)
+# The hclust() function returns a hierarchical
+# clustering model
+hc <- hclust(d)
+# the print method is not so useful here
+hc
+plot(hc)
+#numbers at bottom are the points
+#not ordered numerically 
+# 2 larger clusters: one is 1-30 the second is 30+
+#increased height (higher up line goes before connecting), the more distance there is between 2 points/clusters
+```
+
+```{r}
+plot(hc)
+abline(h=6, col = "red", lty = 2)
+abline(h=4, col = "blue")
+#if I "cut" the tree at height = 6, there would be 2 clusters
+```
+
+To get cluster membership vector I need to "cut" the tree at a certain height to yield my separate cluster branches 
+```{r}
+gp2 <- cutree(hc, h=6) #cut by height h
+gp4 <- cutree(hc, h=4)
+table(gp2)
+table(gp4)
+```
+
+centroid method results in weird "goalposts" that move up instead of down
+single linking usually has a chain-like tree
+```{r}
+# Using different hierarchical clustering methods
+hc.complete <- hclust(d, method="complete")
+hc.average <- hclust(d, method="average")
+hc.single <- hclust(d, method="single")
+```
+
+```{r}
+# Step 1. Generate some example data for clustering
+x <- rbind(
+ matrix(rnorm(100, mean=0, sd = 0.3), ncol = 2), # c1
+ matrix(rnorm(100, mean = 1, sd = 0.3), ncol = 2), # c2
+ matrix(c(rnorm(50, mean = 1, sd = 0.3), # c3
+ rnorm(50, mean = 0, sd = 0.3)), ncol = 2))
+colnames(x) <- c("x", "y")
+# Step 2. Plot the data without clustering
+plot(x)
+# Step 3. Generate colors for known clusters
+# (just so we can compare to hclust results)
+col <- as.factor( rep(c("c1","c2","c3"), each=50) )
+plot(x, col=col)
+```
+Q. Use the dist(), hclust(), plot() and cutree() functions to return 2 and 3 clusters
+```{r}
+hcx <- hclust(dist(x))
+plot(hcx)
+#3 clusters
+abline(h=2.0, col="red")
+hc3 <- cutree(hcx, k=3)
+hc3
+#2 clusters
+abline(h=2.3, col="blue")
+hc2 <- cutree(hcx, k=2)
+hc2
+```
+To get cluster membership vector use `cutree` and then use `table()` to tabulate how many members in each cluster we have
+```{r}
+table(hc3)
+table(hc2)
+```
+We should have 50/50 in hc2 so it has been poorly clustered 
+make a plot with cluster results 
+```{r}
+plot(x, col = hc3)
+```
+
+Q. How does this compare to your known 'col' groups?
+slightly similar but not quite the same 
+
+##Principal Component Analysis (PCA)
+Eigenvectors capture main directions and variants in dataset 
+eigenvalues that tells you %variation
+PCA tells you of original things you're measuring, which contribute to WT and KO (contribute the most to distinguishing eigenvalues/vectors)
+
+Red PCA is best fit
+
+```{r}
+x <- read.csv("UK_foods.csv", row.names = 1)
+x
+nrow(x)
+ncol(x)
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+#not very useful, instaid use:
+pairs(x, col=rainbow(10), pch=16)
+```
+`pairs()` can help with small data sets like this one but often we are dealing with data that is too large 
+Pairs 2 at a time to compare every combination of 2 individually 
+Each point is one of the 17 categories and it they were exactly the same the point would lie alonf the diagonal (ex. the first few points of England vs. Wales)
+Upper right half and Lower left half have the exact same data but switching the axes 
+can still be complicated to look at so use PCA:
+
+```{r}
+pca <- prcomp(t(x))
+pca
+#t is transpose which flips x and y axis on data so it's read correctly
+```
+
+What is in `prcomp`/PCA printout?
+```{r}
+summary(pca)
+#67% original variants captured in PC1 (proportion of variance) 
+#67% of the variation is from PC1
+#cumulative proportion is sum of prop of variance from everything before
+attributes(pca)
+```
+```{r}
+plot(pca$x[,1], pca$x[,2]) #PCA1 vs PCA2 plot (column/country 1 vs2)
+text(pca$x[,1], pca$x[,2], colnames(x), col=c("grey", "red", "blue", "green"))
+```
+there is one country that is very different from the rest 
+Show us houw food categories lead to separation 
+```{r}
+## Lets focus on PC1 as it accounts for > 90% of variance 
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+
