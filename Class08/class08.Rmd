@@ -2,7 +2,7 @@
 title: "Class 08"
 author: "Sarra Larif"
 date: "1/30/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -100,12 +100,12 @@ methylationSummary  <- AlignToReference(methylatedSimulatedReads, refSeq, readLe
 `sample(x = c(10), size = 5, replace = T)`
 generates random sequence so results will be different every time 
 Replace = FALSE means that you can't have the same number twice 
-```{r}
+"```{r}
 sample(x = c(10), size = 5, replace = T)
 sample(x = c(43), size = 5, replace = T)
 sample(x = c(10), size = 5, replace = FALSE)
 sample(x = c(10), size = 15, replace = FALSE)
-```
+```"
 
 `substring(as.character("ATCGCGCATATACCGATCGT"), c(1,3,5), c(3,9,12))`
 Takes random indeces and gives 8? base pairs 
