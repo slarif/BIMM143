@@ -2,7 +2,7 @@
 title: "Class 07"
 author: "Sarra Larif"
 date: "1/28/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -52,7 +52,7 @@ is.na(z)
 ```
 
 
-```{r}
+"```{r}
 
 is.both.na <- function (x,y) {
 is.na(x) & is.na(y)
@@ -70,7 +70,7 @@ is.both.na1 <-  function(x,y) {
   is.na(x) & is.na (y)
 }
 is.both.na1(a, b)
-```
+```"
 
 ```{r}
 rescale_new <-  function(x, y) {
@@ -163,7 +163,7 @@ y <- df2$IDs
 ```
  
 Want to add functionality 
-```{r}
+"```{r}
 gene_interect3 <- function(df1, df2, gene.colname = "IDs") {
   
   cbind(df1[df1[, gene.colname] %in% df2[, gene.colname],], df2[df2[, gene.colname] %in% df1[, gene.colname], ], "exp")
@@ -181,10 +181,10 @@ colnames(df2) <- c("new_name", "exp")
 #change column name in data frame
 
 gene_intersect3(df1, df2, gene.colname = "new_name")
-```
+```"
  
  Cleaning up the code
-```{r}
+"```{r}
 gene_interesect4 <- function(df1, df2, gene.colname = "IDs") {
   
   df1.name <- df1[, gene.colname]
@@ -197,7 +197,7 @@ gene_interesect4 <- function(df1, df2, gene.colname = "IDs") {
 }
 
 gene_intersect4(df1, df2, gene.colname = "new_name")
-```
+```"
  
 #Installing Packages
 `install.packages('ggplot2')`
