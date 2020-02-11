@@ -1,0 +1,57 @@
+---
+title: "Class 6 Homework"
+author: "Sarra Larif"
+date: "1/23/2020"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Improve this code: 
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+```{r}
+#Input the PDB ID with optional specifications for the chain and atom of interest as well as for the plot type and label
+plot.prot <- function(PDB_ID, chain = "A", atom = "CA", typ = "l", ylab = "Bfactor"){
+ 
+   #library attaches the necessary package to allow access of PDB data
+  library(bio3d) 
+  
+  #read.pdb uses the PDB ID input to call the PDB file of that protein
+  a <- read.pdb(PDB_ID)  
+  
+  #trim.pdb narrows the information of the PDB file to only provide what is needed for the plot while including for any specifications made in the new function for the chain or atom
+  b <- trim.pdb(a, chain = chain, elety = atom)
+  
+  #c stores the selection of data for the plot the function calls
+  c <- b$atom$b
+ 
+   #plotb3 calls the output which is a scatter plot of the selected protein structure residues including secondary structure element representations in the margins
+  plotb3(c, sse = b, typ = typ, ylab = ylab)
+}
+```
+
+Examples of output: 
+```{r}
+plot.prot("4AKE")
+plot.prot("1AKE")
+plot.prot("1E4Y")
+```
+

@@ -1,0 +1,207 @@
+---
+title: 'Class 6: R Functions'
+author: "Sarra Larif"
+date: "1/23/2020"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Functions
+
+## Level 2 Heading
+
+### Level 3 Heading
+
+```{r}
+#this is a silly plot
+plot(1:5)
+```
+Any text in R markdown is just text, need to do insert (cntrl+alt+i) to add R code
+
+Lets see more about file import (i.e. reading files into R). The main read function in base R is `read.table()`
+
+`read.csv` has different defaults 
+
+```{r}
+t1 <- read.csv("test1.txt")
+t1
+```
+
+```{r}
+t2 <- read.table("test2.txt", sep = "$", header = TRUE)
+t2
+```
+
+```{r}
+t3 <- read.table("test3.txt")
+t3
+```
+
+```{r}
+add <- function(x, y = 1) {
+  #sum the input x and y
+  x + y
+}
+add(5)
+```
+Green play button sends code to "R brain"
+
+Let's use the new function
+```{r}
+add(175, 3)
+```
+
+How does this work with vector inputs?
+```{r}
+add(c(5, 7, 2, 9))
+```
+It just added 1 to each.
+
+```{r}
+add(c(1, 2, 4), 4)
+```
+It added 4 to each. 
+
+```{r}
+add(c(1, 2, 4), c(1, 2, 4))
+```
+
+```{r}
+#add(c(1,2,4), 1, 2, 4) brings an error:unusued arguments
+```
+
+What is this `range()` function?
+```{r}
+x <- c(4,4,10,3,11)
+max(x)
+min(x)
+range(x)
+```
+
+```{r}
+rescale <- function(x) {
+ rng <-range(x)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale(x)
+```
+
+Do some more testing
+```{r}
+rescale(1:10)
+```
+
+How to get function to work here where there is an NA
+```{r}
+rescale(c(1, 2, NA, 3, 10))
+```
+```{r}
+x <- c(1, 2, NA, 3, 10)
+rng <-  range(x, na.rm = TRUE)
+rng
+```
+```{r}
+rescale2 <- function(x) {
+ rng <-range(x, na.rm = TRUE)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale2(x)
+```
+
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+ rng <-range(x, na.rm=na.rm)
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+ return(answer)
+}
+
+rescale3(x)
+```
+
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+ rng <-range(x, na.rm=na.rm)
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+   print("Don't sing again please!")
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+ return(answer)
+}
+
+rescale3(x, plot = TRUE)
+```
+
+Do not put install commands in markdown or it will try to install the package every time you render the file
+
+Can you improve this code?
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+Plot is measure of flexibility along sequence from c to n (higher peak = more it's moving)
+
+Questions: 
+Q1. `read.pdb()` provides a file in the global environment that gives data from PDB on the protein
+It's a large list of 8 things and of class "pdb", "sse"
+```{r}
+class(s1)
+
+str(s1)
+```
+
+```{r}
+s1$seqres
+```
+A/B = chain A sequences and chain B sequences 
+
+```{r}
+aa321(s1$seqres)
+```
+
+Q2. `trim.pdb()` provides the same data as read.pdb but with less information (subset of data)
+"produce a new smaller PDB object, containing a subset of atoms, from a given larger PDB object"
+
+Q3. removing `sse` removes the grey rectangles in the plot which represents what the secondary structure of the protein is (helix, sheet, turn)
+
+Q4. Combining the plots
+```{r}
+plotb3(s1.b, sse=s1.chainA, typ="l", lwd = 2, ylab="Bfactor")
+points(s2.b, typ = "l", col = "blue", lwd = 2)
+points(s3.b, typ = "l", col = "green", lwd = 2)
+```
+
+Q5. 2 and 3
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+Quantify with `dist( rbind(s1.b, s2.b, s3.b) )` which provides the distances between each protein
