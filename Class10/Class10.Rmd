@@ -1,0 +1,149 @@
+---
+title: "Class 10"
+author: "Sarra Larif"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Scaling
+Sometimes we use different scales to compare things (meters vs. ft)
+`prcomp(x, SCALE = TRUE)` scales the data before PCA (normally scale = false so it doesn't scale)
+
+##Analysis of Human Breast Cancer
+```{r}
+#Import the data from the link in the class website and store as wisc.df
+wisc.df <- read.csv("WisconsinCancer.csv")
+head(wisc.df)
+```
+M = malignant, B = benign 
+Column X is full of NAs (problem)
+ID column is zip codes that aren't supposed to be there because good neighborhoods showed treatment success and bad neighborhoods didn't
+Don't want Diagnosis either because that's the answer and don't want X
+```{r}
+wisc.data <- as.matrix(wisc.df[,3:32])
+head(wisc.data)
+```
+```{r}
+#how many patients in this data set?
+nrow(wisc.data)
+#how many Ms and Bs?
+table(wisc.df$diagnosis)
+#how many variables/features in data are suffixed with _mean?
+grep("_mean", colnames(wisc.df), value=TRUE)
+#value = TRUE tells you what they are 
+length(grep("_mean", colnames(wisc.df)))
+```
+
+##Principal Component Analysis 
+Before we use PCA we need to consider if we need to scale `scale = TRUE`
+```{r}
+colMeans(wisc.data)
+apply(wisc.data,2,sd) #apply standard deviation across (1 for rows or 2 for columns) in data set
+```
+Want to rounf everything to 2 sig figs
+```{r}
+round(apply(wisc.data,2,sd),2)
+```
+Need to scale
+```{r}
+wisc.pr <- prcomp(wisc.data, scale = TRUE)
+summary(wisc.pr)
+```
+Q4. proportion of variance = can plot 44% of data in PC1
+ - The 1st PC captures 44.27% of the original variance.
+looking for point where there's  the biggest drop in percent variance exlpained (scree plot?)
+Q5. 3 PCS
+Q6. 7 PCs
+
+Let's make some figures (visualize PCA results)
+```{r}
+biplot(wisc.pr) 
+#wtf is this? we need to clean it up
+```
+
+```{r}
+#Tells you the different results we have in PCA
+attributes(wisc.pr)
+```
+```{r}
+#plot x of PCA 1 vs x of PCA 2 coloring by if its malignant or benign
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=wisc.df$diagnosis)
+```
+Red and black are split but red is more spread out and there is a small mixture of malignant and benign but there is a spread so we should look into it more 
+(0,0) is mean of all the columns
+Tight clustering of black means there aren't many ways to look benign (black) but there are many ways to look malignant (red)
+Maximum variation of data is between the minimum and maximum of data (line along dots on page 21 of slides)
+take midpoint as zero and genes on end can have plus and minus values so that absolute value of higher number means more variation/higher influence
+PC1 and PC2 are each an axis(?)
+Each point represents a column of data by plotting its influence on PC1 vs. its influence on PC2
+getting points near each other (clustering) means they behave similarly 
+```{r}
+#Add average lines to visualize easier 
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=wisc.df$diagnosis)
+abline(h=0, col="gray", lty=2)
+abline(v=0, col="gray", lty=2)
+```
+malignant and benign are fairly similar and cluster around average?
+
+
+###Cluster in PC space 
+can you take the raw data and cluster it? Yes but it looks terrible 
+Let's see if we can do it
+```{r}
+km <- kmeans(wisc.data, centers = 2, nstart = 20)
+hc <- hclust(dist(wisc.data))
+plot(hc)
+```
+Uneven distribution because the data doesn't really have good means of clustering 
+instead of raw data, let's give it the results of the principal component analysis
+Using the minimum number of principal components required to describe at least 90% of the variability in the data, create a hierarchical clustering model with the linkage method="ward.D2". We use Ward’s criterion here because it is based on multidimensional variance like principal components analysis. Assign the results to wisc.pr.hclust.
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:3]), method = "ward.D2")
+plot(wisc.pr.hclust)
+```
+To get out clusters out of this tree we need to CUT it with `cutree()`
+```{r}
+grps3 <- cutree(wisc.pr.hclust, k=3)
+grps3
+table(grps3) #how many data points are in each group
+```
+
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=grps3)
+```
+green seems to be benign and black and red seem to be malignant
+Let's check: we can use the `table()` function to compare $diagnosis vector with out cluster results vector 
+```{r}
+table(grps3, wisc.df$diagnosis)
+```
+
+```{r}
+grps2 <- cutree(wisc.pr.hclust, k=2)
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=grps2)
+table(grps2, wisc.df$diagnosis)
+```
+in cluster 1 you have 24 benign patients but 333 benign patients in cluster 2; malignant has 179 in cluster 1 and 33 in cluster 2(24 and 33 misdiagnosed)
+Balance of sensitivity vs. specificity 
+
+##Prediction
+We will use the `predict()` function that will take our PCA model from before and new cancer cell data and project that into our PCA space
+```{r}
+new <- read.csv("new_samples.csv")
+new
+```
+Use `predict()` with our previous PCA model and new data...
+```{r}
+npc <- predict(wisc.pr, newdata = new)
+npc
+```
+Now draw the PCA plot and add new data:
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=wisc.df$diagnosis)
+points(npc[,1], npc[,2], col ="blue", pch=15, cex=3)
+text(npc[,1], npc[,2], labels = c(1,2), col="white")
+```
+Want to prioritize patient 2 for checks because matches malignant clustering
