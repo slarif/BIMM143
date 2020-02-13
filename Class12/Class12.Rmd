@@ -55,5 +55,33 @@ perc.xe
 round(sum(stats$Proteins)/sum(stats$Total)*100,2)
 ```
 
-
 >Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+1289
+
+##VMD
+Need to download PDB format of the molecule then change "determine file type" to automatically to open 
+to change appearance: graphics -> representations, change it then -> apply -> create rep
+Resolution of PDB structure is 2 angstroms but hydrogen is smaller than that so they don't appear in water molecules that "hover" around the protein 
+To take high res image: File->Render->tachyon internal-> render
+
+```{r}
+library(bio3d) 
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+##select protein only atoms
+
+Here I will use the `atom.select()` function 
+```{r}
+prot <- atom.select(pdb, "protein", value = TRUE)
+lig <- atom.select(pdb, "ligand", value = TRUE)
+```
+
+and write out these new PDB objects with `write.pbd()`
+```{r}
+write.pdb(lig, file = "1hsg_ligand.pdb")
+write.pdb(prot, file = "hsg1_protein.pdb")
+```
+
