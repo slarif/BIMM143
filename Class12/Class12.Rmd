@@ -1,0 +1,59 @@
+---
+title: "Class 12: Structural Bioinformatics Part 1"
+author: "Sarra Larif"
+date: "2/13/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Notes: 
+Sequence: hydrophobic amino acids want to be buried/hidden while hydrophilic want to be on surface so amino acid chain is dynamic (shape-shifting molecule)with different shapes/conformations active at different times 
+Low energy shapes/conformations are stable
+Structure is more conserved than sequence because it's closer to function so even when sequence changes, the shape needs to stay the same to keep the function 
+###Protein Structure
+1IEP is a kinase that is a drug target for leukemia 
+ABDGE next to the element is for carbon (alpha, beta, etc)
+Tube representation just draws through every alpha carbon of each protein
+NMA gives us better idea of how proteins work to help us better devlop drugs for them
+
+##PDB Statistics
+
+Here we inspect the types of structures in the main database for 3D biomolecular data - the PDB
+
+>Q1: Determine the percentage of structures solved by X-Ray and Electron Microscopy. 
+
+```{r}
+#read in file
+stats <- read.csv("Data Export Summary.csv", row.names = 1)
+stats
+
+#calculate percentage values asked for each 'method
+ans <- stats$Total/sum(stats$Total)*100
+names(ans) <- rownames(stats)
+round(ans,2)
+ans
+
+sum(stats$Proteins)
+
+perc.xray <- stats[1,1]/stats[1,5]
+perc.EM <- stats[3,1]/stats[3,5]
+perc.xray
+perc.EM
+
+sum(stats$Total)
+
+perc.xe <- (stats[1,1]+stats[3,1])/sum(stats$Total)*100
+perc.xe
+```
+
+>Q2. Also can you determine what proportion of structures are protein? Aim to have a rendered GitHub document with working code that yields your answers. 
+
+```{r}
+round(sum(stats$Proteins)/sum(stats$Total)*100,2)
+```
+
+
+>Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
