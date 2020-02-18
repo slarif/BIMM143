@@ -1,0 +1,56 @@
+---
+title: "Class 13: Structure based drug discovery"
+author: "Sarra Larif"
+date: "2/18/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Applications
+Discriminate between good and poor binders, or provide a priority ranking to a collection of ligands
+Provide in depth mechanistic characterization of specific ligant or group of ligands
+Provide valuable guidance for medicinal chemists trying 
+###computational ligand docking
+Screening and ranking compounds as potential ligands (aka virtual screening)
+Improving "lead" compounds (aka ligand optimization, more on this later...)
+  This is a common practice among seasoned computational chemists
+###Scenario I
+Want a drug that fits better than the peptide to block it 
+Use docking software and look for LOWER energy 
+Want to find best fit docking based on energy interactions
+Bonding Interactions vs. non-binding interactions 
+
+##Hands-On Section
+
+Download and clean HIV-Pr Receptor Structure
+
+Here we will download the 1HSG PDB structure from the online database, remove the bound drug from Merk and write out a protein only and ligand only new set of PDB files
+
+We will use the **bio3d** package functions `get.pdb()`, `read.pdb()`, `atom.select()`, and `write.pdb()`
+
+`library(bio3d)`
+```{r}
+#Download PDB file
+file.name <- get.pdb("1hsg")
+
+pdb <- read.pdb(file.name)
+pdb
+```
+
+Select Protein only
+```{r}
+prot <- atom.select(pdb, string= "protein" , value = TRUE)
+write.pdb(prot, file = "1hsg_protein.pdb")
+```
+
+Select and write out ligand only file
+```{r}
+lig <- atom.select(pdb, string = "ligand", value = TRUE)
+write.pdb(lig, file = "1hsg_ligand.pdb")
+lig
+```
+
+
