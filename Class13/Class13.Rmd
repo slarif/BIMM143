@@ -53,4 +53,7 @@ write.pdb(lig, file = "1hsg_ligand.pdb")
 lig
 ```
 
-
+###AutoDockTools
+Add hydrogens with edit>hydrogens>add
+Grid>macromolecules>choose>1hsg_protein>okay>save in class 
+pdbqt is input for function
