@@ -57,3 +57,20 @@ lig
 Add hydrogens with edit>hydrogens>add
 Grid>macromolecules>choose>1hsg_protein>okay>save in class 
 pdbqt is input for function
+Grid>Grid Box: only want ligands to dock at a certain binding site it limits the center of mass so they can only go there (???)
+Change size of center of mass to make sure ligand can fit within that box (more for visualization to show where ligand is contrained to)
+
+Section 1-1.5
+Took pdb file and split it to protein and ligand then added hydrogens and parameters (atom types and charges - .pdbqt)
+
+Make text file with config info for the autodock software to read
+
+```{r}
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+```
+
+Best fit result is the first position displayed on VMD
+
+###Ligand Based
+Uses ligands that have already been discovered/established
