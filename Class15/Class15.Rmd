@@ -1,0 +1,46 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Lecture Notes
+When curve dips down rapidly there is new technology
+
+##Hands-on Session
+###OMIM
+Search "asthma Verlaan" and click first result and scroll down until you find "Verlaan et. al" then click the SNPs and click where it says it overlaps with `4 transcripts` 
+Ensemble oage gives info on SNP and the genes in its vicinity (genomic context) and tells you populations in various regions 
+
+###Galaxy
+FASTQC runs all quality scores in box plots 
+Tophat reads over the introns in data for RNA-seq
+
+###Analyze RNA-seq by genotype results
+
+Here we read the results of RNA-Seq for about ~230 samples (people) with different genotypes for the rs8067378 Asthma associated SNP.
+
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+#Calculate average expression value of people with A/A by extracting the A/A rows
+inds <- expr$geno=="A/A"
+expr[inds,]
+mean(expr[inds,"exp"])
+summary(expr[inds,]$exp)
+```
+
+```{r}
+#Do same thing for G/G
+indg <- expr$geno=="G/G"
+summary(expr[indg,]$exp)
+```
+
+```{r}
+boxplot(exp ~ geno, data = expr, notch=TRUE)
+#if notches don't overlapp then there's statistic significance 
+```
+
