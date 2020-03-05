@@ -1,0 +1,156 @@
+---
+title: "Class 18: Investigating Cancer Genomics Datasets"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Lecture Notes
+Advantage of Exome sequencing is tiny fraction of genome is sequenced --> cheaper/more effective but you miss everything in noncoding which could be important for regulation 
+Passenger mutations are those that are not key to progression of cancer but that accumulate over time 
+DNA repair genes is like never taking 
+
+RAS changes shape to propogate signaling for cell proliferaiton 
+
+##Hands-On Part 1
+Positive A.A. mutate into uncharged which affects its interaction with the DNA binding domain (negative)
+
+###Questions
+Q5. What is the most frequentely mutated position associated with cancer in the KRas protein (i.e. the amino acid with the most mutations)?
+      Chromosome 12 (G12D from C>T)
+Q6. Are KRas mutations common in Pancreatic Adenocarcinoma (i.e. is the Pancreas a common ‘primary site’ for KRas mutations?).
+      Yes
+Q6. What is the ‘TGCA project’ with the most KRas mutations?
+      Pancreatic Cancer (PAAD)
+Q7. What precent of cases for this ‘TGCA project’ have KRas mutations and what precent of cases have p53 mutations?
+HINT: Placing your mouse over the project bar in the Cancer Distribution panel will bring up a tooltip with useful summary data.
+      75.27%
+Q8. How many TGCA Pancreatic Adenocarcinoma cases (i.e. patients from the TCGA-PAAD project) have RNA-Seq data available? 
+      177
+      
+###Connect to the NCI-GDC Databace
+The NCI-GDC (cancer genomics commons) is a major portal for cancer genomics data 
+Here we use the bioconductor package **GenomicDataCommons** to talk to this database and download data etc. all from R. 
+Install Packages: `BiocManager::install(c("GenomicDataCommons", "TCGAbiolinks", "maftools"))`
+```{r}
+library(GenomicDataCommons)
+library(TCGAbiolinks)
+library(maftools)
+```
+
+Can we talk to the online database?
+```{r}
+status()
+```
+
+###Querying the GDC from R:
+```{r}
+cases_by_project  <- cases() %>% facet("project.project_id") %>% aggregations()
+head(cases_by_project)
+```
+
+`%>%` Pipe Operator is specific to R and takes the data before and applies the function after. It is sometimes more clear to read because the code is linear rather than having functions within functions
+```{r}
+c(1:10) %>% mean()
+```
+
+###Plot this overview data
+```{r}
+x <- cases_by_project$project.project_id
+barplot(x$doc_count, names.arg = x$key, las = 2, col="lightblue", log="y")
+#The first three projects have way more patients enrolled by them for study
+```
+
+###Variant Analysis with R:
+
+Find files available for PAAD project that we can then examine variants from
+```{r}
+maf.file <- GDCquery_Maf(tumor="PAAD", pipelines = "mutect")
+maf.file
+```
+
+Read in the MAF file we found
+```{r}
+vars <- read.maf(maf= maf.file, verbose = FALSE)
+```
+
+Now make a summary plot of this data
+```{r}
+plotmafSummary(vars)
+```
+
+###Draw oncoplot
+```{r}
+oncoplot(maf = vars, top = 10)
+```
+
+##Lecture Pt. 2: Cancer Immunotherapy 
+9mer: Peptide with 9 amino acids (9 consecutive amino acids)
+
+##Hands-On Section 2
+
+Q1: Identify sequence regions that contain all 9-mer peptides that are only found in the tumor.
+
+seq.file <- "https://bioboot.github.io/bimm143_W20//class-material/lecture18_sequences.fa"
+
+library(bio3d)
+
+seqs <- read.fasta(seq.file)
+aln <- seqaln(seqs)
+aln
+
+Run both sequences through muscle and wherever the tumor and WT are different, find the 9 different possible 9-mers that would contain that difference: 
+      1. LDLMLSPDD, MLDLMLSPD, AMLDLMLSP, QAMLDLMLS, SQAMLDLML, PSQAMLDLM, LPSQAMLDL, PLPSQAMLD, SPLPSQAML
+      2. WMPEAAPPV, PWMPEAAPP, APWMPEAAP, EAPWMPEAA, DEAPWMPEA, PDEAPWMPE, GPDEAPWMP, PGPDEAPWM, DPGPDEAPW
+      3. 
+```
+library(bio3d)
+seqs <- read.fasta("lecture18_sequences.fa")
+seqs <- seqaln(seqs)
+seqs
+
+## Calculate positional identity scores
+ide <- conserv(seqs$ali, method="identity")
+mutant.sites <- which(ide < 1) 
+
+## Exclude gap possitions from analysis
+gaps <- gap.inspect(seqs)
+gaps$f.inds
+mutant.sites <- mutant.sites[mutant.sites %in% gaps$f.inds]
+
+mutant.sites
+```
+ 
+```{r}
+x <- c(1:6)
+y <- c(1:4)
+x %in% y
+```
+
+Find the -8 before and +8 after (i.e. thhe sequence segment containing all possible 9-mer sequences with a tumor specific amino-acid)
+```{r}
+mutant.sites <- c(41, 65, 213, 259)
+mutant.sites -8
+mutant.sites +8
+```
+ 
+ ```
+ aln$ali[, start.position[1]:end.position[1]]
+ #To extract jut the mutant 
+ aln$ali[2, start.position[1]:end.position[1]]
+ 
+ # Blank matrix to store sub-sequences
+store.seqs <- matrix("-", nrow=length(mutant.sites), ncol=17)
+rownames(store.seqs) <- mutant.names
+
+## Extract each sub-sequence
+for(i in 1:length(mutant.sites)) {
+  store.seqs[i,] <- seqs$ali["P53_mutant",start.position[i]:end.position[i]]
+  
+## Output a FASTA file for further analysis
+write.fasta(seqs=store.seqs, ids=mutant.names, file="subsequences.fa")
+```
+ 
+ 
