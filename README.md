@@ -1,6 +1,4 @@
-# BIMM143
+# BIMM 143: Bioinformatics 
 
 
-This is my classwork from [BIMM 143](https://bioboot.github.io/bimm143_W20/) winter 2020 quarter at UC San Diego.
-
-Click green push to send your code to git hub and click pull to bring any changes you made within Git Hub
+This is my classwork from [BIMM 143](https://bioboot.github.io/bimm143_W20/) Winter Quarter 2020 at UC San Diego.
