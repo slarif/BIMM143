@@ -17,4 +17,4 @@ This is my classwork from [BIMM 143](https://bioboot.github.io/bimm143_W20/) Win
 - Class 15:
 - Class 16: 
 - Class 17:
-- Class 18: 
+- [Class 18:](file:///C:/Users/sarra/AppData/Local/Temp/RtmpW62zjT/preview-1cd439331c7.html) 
